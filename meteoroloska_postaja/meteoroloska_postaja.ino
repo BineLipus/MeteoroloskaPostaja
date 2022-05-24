@@ -47,6 +47,7 @@ char password[] = "db_password";        // MySQL user login password
 
 IPAddress server_addr(192,168,1,10);  // IP of the MySQL *server* here
 
+
 char INSERT_DATA[] = "INSERT INTO arduino_meteorological_station.measurement (temperature, humidity, pressure) VALUES (%.2f, %.2f, %.3f)";
 char query[128];
 
@@ -74,7 +75,13 @@ void setup()
     while (true);
   }
 
-  while (status != WL_CONNECTED) {
+  connectToWiFi();
+}
+
+void connectToWiFi()
+{
+  
+    while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     status = WiFi.begin(ssid, pass);
@@ -88,7 +95,6 @@ void setup()
 
   Serial.println("Connected to wifi");
   printWiFiStatus();
-  
 }
 
 double DecimalRound(double input, int decimals)
@@ -182,6 +188,20 @@ void insert(double temperature, double pressure, double humidity)
   } 
   else {
     Serial.println("Connect failed. Trying again on next iteration.");
+    
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Conn. Failed!");
+    lcd.setCursor(0, 1);
+    lcd.print("Reconnecting...");
+    // Wait for 2 seconds
+    delay(2000);
+    
+    // Reconnect to WiFi (maybe connection was dropped)
+    status = WL_IDLE_STATUS; // For WiFi so it can reconnect (else status would still be "WL_CONNECTED" and reconnection would not happen)
+    connectToWiFi();
+    // Print to display that connection failed
+
   }
   conn.close();
 }
